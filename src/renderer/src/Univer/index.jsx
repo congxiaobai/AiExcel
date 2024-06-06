@@ -1,7 +1,11 @@
-import '@univerjs/design/lib/index.css';
-import './index.css';
+import "@univerjs/design/lib/index.css";
+import "@univerjs/ui/lib/index.css";
+import "@univerjs/docs-ui/lib/index.css";
+import "@univerjs/sheets-ui/lib/index.css";
+import "@univerjs/sheets-formula/lib/index.css";
 
-import { Univer, LocaleType, UniverInstanceType, Tools } from '@univerjs/core';
+
+import { Univer, LocaleType, UniverInstanceType,Tools } from '@univerjs/core';
 import { defaultTheme } from '@univerjs/design';
 import { UniverDocsPlugin } from '@univerjs/docs';
 import { UniverDocsUIPlugin } from '@univerjs/docs-ui';
@@ -19,7 +23,7 @@ import SheetsZhCN from '@univerjs/sheets/locale/zh-CN';
 import SheetsUIZhCN from '@univerjs/sheets-ui/locale/zh-CN';
 
 // eslint-disable-next-line react/display-name
-const UniverSheet = forwardRef(({ data }: any, ref) => {
+const UniverSheet = forwardRef(({ data }, ref) => {
   const univerRef = useRef(null);
   const workbookRef = useRef(null);
   const containerRef = useRef(null);
@@ -38,7 +42,7 @@ const UniverSheet = forwardRef(({ data }: any, ref) => {
     }
     const univer = new Univer({
       theme: defaultTheme,
-      locale: LocaleType.ZH_CN,
+      locale: LocaleType.EN_US,
       locales: {
         [LocaleType.ZH_CN]: Tools.deepMerge(
           SheetsZhCN,

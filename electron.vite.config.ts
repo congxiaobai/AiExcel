@@ -1,11 +1,10 @@
 import { resolve } from 'path'
 import { defineConfig, externalizeDepsPlugin } from 'electron-vite'
 import react from '@vitejs/plugin-react'
-import { univerPlugin } from '@univerjs/vite-plugin'
 
 export default defineConfig({
   main: {
-    plugins: [externalizeDepsPlugin(), univerPlugin()]
+    plugins: [externalizeDepsPlugin()]
   },
   preload: {
     plugins: [externalizeDepsPlugin()]
