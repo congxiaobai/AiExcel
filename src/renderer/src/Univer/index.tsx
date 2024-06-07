@@ -3,7 +3,7 @@ import "@univerjs/ui/lib/index.css";
 import "@univerjs/docs-ui/lib/index.css";
 import "@univerjs/sheets-ui/lib/index.css";
 import "@univerjs/sheets-formula/lib/index.css";
-
+import './index.css'
 
 import { Univer, LocaleType, UniverInstanceType,Tools } from '@univerjs/core';
 import { defaultTheme } from '@univerjs/design';
