@@ -5,7 +5,7 @@ import "@univerjs/sheets-ui/lib/index.css";
 import "@univerjs/sheets-formula/lib/index.css";
 import './index.css'
 
-import { Univer, LocaleType, UniverInstanceType,Tools } from '@univerjs/core';
+import { Univer, LocaleType, UniverInstanceType, Tools } from '@univerjs/core';
 import { defaultTheme } from '@univerjs/design';
 import { UniverDocsPlugin } from '@univerjs/docs';
 import { UniverDocsUIPlugin } from '@univerjs/docs-ui';
@@ -15,6 +15,8 @@ import { UniverSheetsPlugin } from '@univerjs/sheets';
 import { UniverSheetsFormulaPlugin } from '@univerjs/sheets-formula';
 import { UniverSheetsUIPlugin } from '@univerjs/sheets-ui';
 import { UniverUIPlugin } from '@univerjs/ui';
+import { FUniver } from '@univerjs/facade';
+
 import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react';
 import DesignZhCN from '@univerjs/design/locale/zh-CN';
 import UIZhCN from '@univerjs/ui/locale/zh-CN';
@@ -27,7 +29,8 @@ const UniverSheet = forwardRef(({ data }, ref) => {
   const univerRef = useRef(null);
   const workbookRef = useRef(null);
   const containerRef = useRef(null);
-
+  /** @type {React.RefObject<FUniver>} */
+  const fUniverRef = useRef(null);
   useImperativeHandle(ref, () => ({
     getData,
   }));
@@ -42,7 +45,7 @@ const UniverSheet = forwardRef(({ data }, ref) => {
     }
     const univer = new Univer({
       theme: defaultTheme,
-      locale: LocaleType.EN_US,
+      locale: LocaleType.ZH_CN,
       locales: {
         [LocaleType.ZH_CN]: Tools.deepMerge(
           SheetsZhCN,
@@ -74,7 +77,14 @@ const UniverSheet = forwardRef(({ data }, ref) => {
     univer.registerPlugin(UniverSheetsFormulaPlugin);
 
     // create workbook instance
-    univer.createUnit(UniverInstanceType.UNIVER_SHEET, data);
+    workbookRef.current = univer.createUnit(UniverInstanceType.UNIVER_SHEET, data);
+    const univerAPI = FUniver.newAPI(univer)
+    fUniverRef.current = univerAPI;
+    univerAPI.onBeforeCommandExecute((command) => {
+      const { id, type, params } = command;
+      // 在命令执行前执行自定义逻辑
+      console.log('执行了',{id, type, params})
+    })
   };
 
   /**

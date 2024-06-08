@@ -14,11 +14,12 @@ export default (props: { onClose: Function }) => {
     useEffect(() => {
         try {
             window.electron.ipcRenderer.invoke('getSparkConfig').then(data => {
-                if(data){
+                if (data) {
                     enqueueToast({ content: '保存成功', type: 'success' })
-
-                }else{
-                    enqueueToast({ content: '保存失败', type: 'error' })}
+                    setValue(data)
+                } else {
+                    enqueueToast({ content: '保存失败', type: 'error' })
+                }
             })
 
         } catch (error) {
@@ -40,8 +41,8 @@ export default (props: { onClose: Function }) => {
             spark_apiKey: value.spark_apiKey
         }
         window.electron.ipcRenderer.invoke('setSparkConfig', sparkConfig).then(data => {
-            console.log('Data from store:', data);
-            data && setValue(data)
+            setLoading(false)
+            data&& enqueueToast({ content: '保存成功', type: 'success' })
         })
     }
     return <div className="flex flex-col gap-6 p-2">
@@ -72,7 +73,7 @@ export default (props: { onClose: Function }) => {
 
         />
         <div className='flex justify-end gap-2' >
-            <Button  onClick={props.onClose}>关闭</Button>
+            <Button onClick={props.onClose}>关闭</Button>
             <Button isLoading={loading} color="success" isDisabled={!canSubmit} onClick={submit}>保存</Button>
         </div>
 

@@ -5,7 +5,6 @@ import { uploadExcel } from './utils'
 import Store from 'electron-store';
 const store = new Store();
 
-store.set('unicorn', '🦄');
 
 function createWindow(): void {
   // Create the browser window.
@@ -61,7 +60,7 @@ app.whenReady().then(() => {
   ipcMain.handle('getSparkConfig', () => {
     return store.get('sparkConfig');
   })
-  ipcMain.handle('setSparkConfig', (data) => {
+  ipcMain.handle('setSparkConfig', (_,data) => {
     store.set('sparkConfig', data);
     return true;
   })
