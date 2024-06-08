@@ -95,7 +95,7 @@ export const generateData = (data) => {
     }
     sheets[item.id] = {
       type: SheetTypes.GRID,
-      id: item.id+'',
+      id: item.id + '',
       name: item.name,
       cellData: item.data,
     }

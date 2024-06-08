@@ -12,7 +12,8 @@
     "strict": false,
     "allowJs": true,
     "esModuleInterop":true,
-    "jsx": "react-jsx",
+    "jsx": "react",
+    
     "baseUrl": ".",
     "paths": {
       "@renderer/*": [

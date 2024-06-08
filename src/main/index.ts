@@ -2,6 +2,11 @@ import { app, shell, BrowserWindow, ipcMain } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import { uploadExcel } from './utils'
+import Store from 'electron-store';
+const store = new Store();
+
+store.set('unicorn', '🦄');
+
 function createWindow(): void {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
@@ -40,7 +45,7 @@ function createWindow(): void {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(() => {
-  // Set app user model id for windows
+  // Set app user model id for windowsçå
   electronApp.setAppUserModelId('com.electron')
 
   // Default open or close DevTools by F12 in development
@@ -51,7 +56,15 @@ app.whenReady().then(() => {
   })
 
   // IPC test
-  ipcMain.handle('uploadExcel', ()=>uploadExcel(window))
+  ipcMain.handle('uploadExcel', () => uploadExcel())
+
+  ipcMain.handle('getSparkConfig', () => {
+    return store.get('sparkConfig');
+  })
+  ipcMain.handle('setSparkConfig', (data) => {
+    store.set('sparkConfig', data);
+    return true;
+  })
 
   createWindow()
 
