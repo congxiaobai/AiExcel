@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
-import { Input, Button } from "@nextui-org/react";
+import { Input, Button, Card, CardBody, CardHeader, Divider, } from "@nextui-org/react";
 import { useToast } from 'tw-noti';
+import React from 'react';
 
 export default (props: { onClose: Function }) => {
     const { enqueueToast } = useToast();
@@ -42,40 +43,50 @@ export default (props: { onClose: Function }) => {
         }
         window.electron.ipcRenderer.invoke('setSparkConfig', sparkConfig).then(data => {
             setLoading(false)
-            data&& enqueueToast({ content: '保存成功', type: 'success' })
+            data && enqueueToast({ content: '保存成功', type: 'success' })
         })
     }
-    return <div className="flex flex-col gap-6 p-2">
-        <Input
-            label="APPID" isRequired
-            placeholder="请在官网获取"
-            className="max-w-xs" isClearable={true}
-            value={value.spark_appId}
-            onClear={() => setValue({ ...value, spark_appId: '' })}
+    return <Card>
+        <CardHeader className="pb-0 pt-2 px-4 flex-col items-start">
+            <div className="flex flex-col gap-2">
+                <h4 className="text-md">科大讯飞出品</h4>
+                <p className="text-small text-default-500">星火3.5模型，新用户可免费获取200万token</p>
+            </div>
+        </CardHeader>
+        <Divider className="mt-2 mb-2" />
 
-            onChange={(e) => setValue({ ...value, spark_appId: e.target.value })}
-        />
-        <Input
-            label="API_SECRET" isRequired
-            placeholder="请在官网获取" isClearable={true}
-            className="max-w-xs" value={value.spark_apiSecret}
-            onClear={() => setValue({ ...value, spark_apiSecret: '' })}
+        <div className="flex flex-col gap-6 p-2">
+            <Input
+                label="APPID" isRequired
+                placeholder="请在官网获取"
+                className="max-w-xs" isClearable={true}
+                value={value.spark_appId}
+                onClear={() => setValue({ ...value, spark_appId: '' })}
 
-            onChange={(e) => setValue({ ...value, spark_apiSecret: e.target.value })}
+                onChange={(e) => setValue({ ...value, spark_appId: e.target.value })}
+            />
+            <Input
+                label="API_SECRET" isRequired
+                placeholder="请在官网获取" isClearable={true}
+                className="max-w-xs" value={value.spark_apiSecret}
+                onClear={() => setValue({ ...value, spark_apiSecret: '' })}
 
-        />
-        <Input
-            label="API_KEY" isRequired
-            placeholder="请在官网获取" isClearable={true}
-            className="max-w-xs" value={value.spark_apiKey}
-            onClear={() => setValue({ ...value, spark_apiKey: '' })}
-            onChange={(e) => setValue({ ...value, spark_apiKey: e.target.value })}
+                onChange={(e) => setValue({ ...value, spark_apiSecret: e.target.value })}
 
-        />
-        <div className='flex justify-end gap-2' >
-            <Button onClick={props.onClose}>关闭</Button>
-            <Button isLoading={loading} color="success" isDisabled={!canSubmit} onClick={submit}>保存</Button>
+            />
+            <Input
+                label="API_KEY" isRequired
+                placeholder="请在官网获取" isClearable={true}
+                className="max-w-xs" value={value.spark_apiKey}
+                onClear={() => setValue({ ...value, spark_apiKey: '' })}
+                onChange={(e) => setValue({ ...value, spark_apiKey: e.target.value })}
+
+            />
+            <div className='flex justify-end gap-2' >
+                <Button onClick={props.onClose}>关闭</Button>
+                <Button isLoading={loading} color="success" isDisabled={!canSubmit} onClick={submit}>保存</Button>
+            </div>
+
         </div>
-
-    </div>
+    </Card>
 }

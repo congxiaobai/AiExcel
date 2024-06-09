@@ -3,9 +3,12 @@ import "@univerjs/ui/lib/index.css";
 import "@univerjs/docs-ui/lib/index.css";
 import "@univerjs/sheets-ui/lib/index.css";
 import "@univerjs/sheets-formula/lib/index.css";
+import '@univerjs/sheets-filter-ui/lib/index.css';
+
 import './index.css'
 
-import { Univer, LocaleType, UniverInstanceType, Tools } from '@univerjs/core';
+import { Univer, LocaleType, UniverInstanceType, Tools, IRange } from '@univerjs/core';
+import max from 'lodash/max'
 import { defaultTheme } from '@univerjs/design';
 import { UniverDocsPlugin } from '@univerjs/docs';
 import { UniverDocsUIPlugin } from '@univerjs/docs-ui';
@@ -15,24 +18,72 @@ import { UniverSheetsPlugin } from '@univerjs/sheets';
 import { UniverSheetsFormulaPlugin } from '@univerjs/sheets-formula';
 import { UniverSheetsUIPlugin } from '@univerjs/sheets-ui';
 import { UniverUIPlugin } from '@univerjs/ui';
-import { FUniver } from '@univerjs/facade';
-
+import { FUniver, FWorkbook } from '@univerjs/facade';
+import { UniverSheetsFilterPlugin } from '@univerjs/sheets-filter';
+import { UniverSheetsFilterUIPlugin } from '@univerjs/sheets-filter-ui';
 import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react';
 import DesignZhCN from '@univerjs/design/locale/zh-CN';
 import UIZhCN from '@univerjs/ui/locale/zh-CN';
 import DocsUIZhCN from '@univerjs/docs-ui/locale/zh-CN';
 import SheetsZhCN from '@univerjs/sheets/locale/zh-CN';
 import SheetsUIZhCN from '@univerjs/sheets-ui/locale/zh-CN';
+import SheetsFilterUIZhCN from '@univerjs/sheets-filter-ui/locale/zh-CN';
 
 // eslint-disable-next-line react/display-name
 const UniverSheet = forwardRef(({ data }, ref) => {
   const univerRef = useRef(null);
   const workbookRef = useRef(null);
   const containerRef = useRef(null);
+  const currentSelection = useRef<IRange[]>(null);
   /** @type {React.RefObject<FUniver>} */
-  const fUniverRef = useRef(null);
+  const fUniverRef = useRef<FUniver>(null);
+
   useImperativeHandle(ref, () => ({
     getData,
+    getFUniverRef() {
+      return fUniverRef.current;
+    },
+    getSelectionData() {
+      if (!currentSelection.current) {
+        return workbookRef.current.save();
+      } else {
+        const univerAPI = fUniverRef.current;
+        const activeWorkbook = univerAPI.getActiveWorkbook();
+
+        const activeSheet = activeWorkbook.getActiveSheet();
+        // const selection = activeSheet.getSelection().getActiveRange();
+        const snapshot = activeWorkbook.getSnapshot();
+        const sheetId = activeSheet.getSheetId();
+        const sheet1 = Object.values(snapshot.sheets).find((sheet) => {
+          return sheet.id === sheetId
+        })
+        const cellData = sheet1.cellData;
+        //找出最大行最大列，避免传入太多的值给后端
+        const maxRow = max(Object.keys(cellData).map(s => +s));
+        const maxCol = max(Object.keys(cellData).map((row) => {
+          return max(Object.keys(cellData[row]).map(s => +s))
+        }))
+        const selecrionData = {};
+
+        const selection = currentSelection.current;
+        selection.forEach(item => {
+          const selectRange = activeSheet.getRange(item.startRow, item.startColumn, item.endRow - item.startRow + 1, item.endColumn - item.startColumn + 1);
+          selectRange.forEach((row: number, col: number, cell) => {
+            if (row > maxRow || col > maxCol) {
+              return;
+            }
+            if (!selecrionData[row]) {
+              selecrionData[row] = {}
+            }
+            if (!selecrionData[row][col]) {
+              selecrionData[row][col] = { v: cell.v }
+            }
+          });
+        })
+        console.log({ selecrionData })
+
+      }
+    },
   }));
 
   /**
@@ -53,6 +104,7 @@ const UniverSheet = forwardRef(({ data }, ref) => {
           SheetsUIZhCN,
           UIZhCN,
           DesignZhCN,
+          SheetsFilterUIZhCN
         ),
       },
     });
@@ -75,16 +127,16 @@ const UniverSheet = forwardRef(({ data }, ref) => {
     univer.registerPlugin(UniverSheetsPlugin);
     univer.registerPlugin(UniverSheetsUIPlugin);
     univer.registerPlugin(UniverSheetsFormulaPlugin);
-
+    univer.registerPlugin(UniverSheetsFilterPlugin);
+    univer.registerPlugin(UniverSheetsFilterUIPlugin);
     // create workbook instance
     workbookRef.current = univer.createUnit(UniverInstanceType.UNIVER_SHEET, data);
     const univerAPI = FUniver.newAPI(univer)
     fUniverRef.current = univerAPI;
-    univerAPI.onBeforeCommandExecute((command) => {
-      const { id, type, params } = command;
-      // 在命令执行前执行自定义逻辑
-      console.log('执行了',{id, type, params})
-    })
+    const activeWorkbook = univerAPI.getActiveWorkbook();
+    activeWorkbook.onSelectionChange((selection) => {
+      currentSelection.current = selection;
+    });
   };
 
   /**

@@ -1,7 +1,7 @@
 import { app, shell, BrowserWindow, ipcMain } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
-import { uploadExcel } from './utils'
+import { exportExcel, uploadExcel } from './utils'
 import Store from 'electron-store';
 const store = new Store();
 
@@ -56,7 +56,7 @@ app.whenReady().then(() => {
 
   // IPC test
   ipcMain.handle('uploadExcel', () => uploadExcel())
-
+  ipcMain.handle('exportExcel', (_,data) => exportExcel(data))
   ipcMain.handle('getSparkConfig', () => {
     return store.get('sparkConfig');
   })

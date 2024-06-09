@@ -1,7 +1,7 @@
 import UniverSheet from "./univer"
 import { useEffect, useRef, useState } from 'react';
 import { DEFAULT_WORKBOOK_DATA, generateData } from './workbook-data';
-import { Button, Modal, useDisclosure, Textarea, ModalBody, ModalContent } from "@nextui-org/react";
+import { Button, Modal, useDisclosure, Textarea, ModalBody, ModalContent, Spacer } from "@nextui-org/react";
 import { Divider } from "@nextui-org/react";
 import Logo from '../public/logo.png'
 import SetIcon from '../public/setting.svg'
@@ -14,9 +14,11 @@ import React from "react";
 function App(): JSX.Element {
   const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
   const [promotText, setPromotText] = useState('');
+  const [sheets,setSheets] = useState([])
   const univerRef = useRef();
   const [data, setData] = useState<IWorkbookData>(DEFAULT_WORKBOOK_DATA as any);
   const [loading, setLoading] = useState(false);
+
   const uploadExcel = () => {
     setLoading(true)
     window.electron.ipcRenderer.invoke('uploadExcel').then(res => {
@@ -29,6 +31,16 @@ function App(): JSX.Element {
     const saveData = univerRef.current?.getData()
     console.log({ saveData })
   }
+  const exportExcel = () => {
+    const activeSheet = univerRef.current?.getSelectionData();
+    console.log({ activeSheet })
+
+    // window.electron.ipcRenderer.invoke('exportExcel', saveData).then(res => {
+    //   setLoading(false)
+
+    //   // 输出接收到的数组: [1, 2, 3, 4, 5]
+    // });
+  }
 
 
   return (
@@ -40,13 +52,22 @@ function App(): JSX.Element {
         </Button>
       </div>
       <div className="flex ">
-        <div className="p-2 pt-4  rounded-md	   shadow-md mr-2 ">
+        <div className="p-2 pt-4  rounded-md flex flex-col	 gap-2   shadow-md mr-2 ">
+
           <Button
             color="success"
-            onClick={uploadExcel} 
+            onClick={uploadExcel}
           >
             上传Excel
           </Button>
+          <Button
+
+            onClick={exportExcel}
+          >
+            导出Excel
+          </Button>
+
+
           <Divider className="my-4" />
         </div>
         <div className="flex-1 p-2 shadow-md ml-2">
