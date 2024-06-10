@@ -38,6 +38,7 @@
     "@univerjs/sheets-numfmt": "^0.1.14",
     "@univerjs/sheets-ui": "^0.1.14",
     "@univerjs/ui": "^0.1.14",
+    "crypto-js": "^4.2.0",
     "dayjs": "^1.11.11",
     "electron-store": "^8.0.0",
     "electron-updater": "^6.1.7",

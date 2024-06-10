@@ -16,10 +16,7 @@ export default (props: { onClose: Function }) => {
         try {
             window.electron.ipcRenderer.invoke('getSparkConfig').then(data => {
                 if (data) {
-                    enqueueToast({ content: '保存成功', type: 'success' })
                     setValue(data)
-                } else {
-                    enqueueToast({ content: '保存失败', type: 'error' })
                 }
             })
 
