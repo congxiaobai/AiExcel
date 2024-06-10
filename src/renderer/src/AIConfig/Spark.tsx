@@ -46,13 +46,13 @@ export default (props: { onClose: Function }) => {
             data && enqueueToast({ content: '保存成功', type: 'success' })
         })
     }
-    return <Card>
-        <CardHeader className="pb-0 pt-2 px-4 flex-col items-start">
-            <div className="flex flex-col gap-2">
-                <h4 className="text-md">科大讯飞出品</h4>
-                <p className="text-small text-default-500">星火3.5模型，新用户可免费获取200万token</p>
-            </div>
-        </CardHeader>
+    return <div>
+
+        <div className="flex flex-col gap-2">
+            <h4 className="text-md">科大讯飞出品</h4>
+            <p className="text-small text-default-500">星火3.5模型，新用户可免费获取200万token</p>
+        </div>
+
         <Divider className="mt-2 mb-2" />
 
         <div className="flex flex-col gap-6 p-2">
@@ -88,5 +88,5 @@ export default (props: { onClose: Function }) => {
             </div>
 
         </div>
-    </Card>
+    </div>
 }

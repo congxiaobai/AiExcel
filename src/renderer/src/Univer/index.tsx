@@ -4,60 +4,82 @@ import "@univerjs/docs-ui/lib/index.css";
 import "@univerjs/sheets-ui/lib/index.css";
 import "@univerjs/sheets-formula/lib/index.css";
 import '@univerjs/sheets-filter-ui/lib/index.css';
-
 import './index.css'
-
-import { Univer, LocaleType, UniverInstanceType, Tools, IRange } from '@univerjs/core';
+import { UniverInstanceType, IRange } from '@univerjs/core';
 import max from 'lodash/max'
-import { defaultTheme } from '@univerjs/design';
-import { UniverDocsPlugin } from '@univerjs/docs';
-import { UniverDocsUIPlugin } from '@univerjs/docs-ui';
-import { UniverFormulaEnginePlugin } from '@univerjs/engine-formula';
-import { UniverRenderEnginePlugin } from '@univerjs/engine-render';
-import { UniverSheetsPlugin } from '@univerjs/sheets';
-import { UniverSheetsFormulaPlugin } from '@univerjs/sheets-formula';
-import { UniverSheetsUIPlugin } from '@univerjs/sheets-ui';
-import { UniverUIPlugin } from '@univerjs/ui';
-import { FUniver, FWorkbook } from '@univerjs/facade';
-import { UniverSheetsFilterPlugin } from '@univerjs/sheets-filter';
-import { UniverSheetsFilterUIPlugin } from '@univerjs/sheets-filter-ui';
-import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react';
-import DesignZhCN from '@univerjs/design/locale/zh-CN';
-import UIZhCN from '@univerjs/ui/locale/zh-CN';
-import DocsUIZhCN from '@univerjs/docs-ui/locale/zh-CN';
-import SheetsZhCN from '@univerjs/sheets/locale/zh-CN';
-import SheetsUIZhCN from '@univerjs/sheets-ui/locale/zh-CN';
-import SheetsFilterUIZhCN from '@univerjs/sheets-filter-ui/locale/zh-CN';
 
+import { UniverUIPlugin } from '@univerjs/ui';
+import { FUniver } from '@univerjs/facade';
+import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react';
+import { createUniverInstance } from './utils'
+import { PageContext } from '../App'
+import React from "react";
+import { Action } from "@renderer/reducer";
 // eslint-disable-next-line react/display-name
-const UniverSheet = forwardRef(({ data }, ref) => {
+const UniverSheet = forwardRef(({ }, ref) => {
   const univerRef = useRef(null);
   const workbookRef = useRef(null);
   const containerRef = useRef(null);
   const currentSelection = useRef<IRange[]>(null);
   /** @type {React.RefObject<FUniver>} */
   const fUniverRef = useRef<FUniver>(null);
+  const { pageState, dispatchPageState } = React.useContext(PageContext)
 
   useImperativeHandle(ref, () => ({
-    getData,
     getFUniverRef() {
       return fUniverRef.current;
     },
+    initData(data) {
+      destroyUniver();
+      init(data);
+      const sheets = Object.keys(data.sheets).map(s => {
+        const tmp = data.sheets[s];
+        return {
+          label: tmp.id,
+          value: tmp.name
+        }
+      })
+      dispatchPageState({ type: Action.UpdateSheets, payload: sheets })
+    },
+    getAllSheet() {
+      const univerAPI = fUniverRef.current;
+      const activeWorkbook = univerAPI.getActiveWorkbook();
+      const sheets = activeWorkbook.getSheets();
+      return sheets.map(s => ({
+        value: s.getSheetId(),
+        label: s.getSheetName()
+      }))
+    },
+    getAllSheetsData() {
+      const univerAPI = fUniverRef.current;
+      const activeWorkbook = univerAPI.getActiveWorkbook();
+      const snapshot = activeWorkbook.getSnapshot();
+      return snapshot.sheets;
+    },
+    getActivePageData() {
+      const univerAPI = fUniverRef.current;
+      const activeWorkbook = univerAPI.getActiveWorkbook();
+      const activeSheet = activeWorkbook.getActiveSheet();
+      const snapshot = activeWorkbook.getSnapshot();
+      const sheetId = activeSheet.getSheetId();
+      const sheetData = Object.values(snapshot.sheets).find((sheet) => {
+        return sheet.id === sheetId
+      })
+      return sheetData;
+    },
     getSelectionData() {
+      const univerAPI = fUniverRef.current;
+      const activeWorkbook = univerAPI.getActiveWorkbook();
+      const activeSheet = activeWorkbook.getActiveSheet();
+      const snapshot = activeWorkbook.getSnapshot();
+      const sheetId = activeSheet.getSheetId();
+      const sheetData = Object.values(snapshot.sheets).find((sheet) => {
+        return sheet.id === sheetId
+      })
+      const cellData = sheetData.cellData;
       if (!currentSelection.current) {
-        return workbookRef.current.save();
+        return cellData;
       } else {
-        const univerAPI = fUniverRef.current;
-        const activeWorkbook = univerAPI.getActiveWorkbook();
-
-        const activeSheet = activeWorkbook.getActiveSheet();
-        // const selection = activeSheet.getSelection().getActiveRange();
-        const snapshot = activeWorkbook.getSnapshot();
-        const sheetId = activeSheet.getSheetId();
-        const sheet1 = Object.values(snapshot.sheets).find((sheet) => {
-          return sheet.id === sheetId
-        })
-        const cellData = sheet1.cellData;
         //找出最大行最大列，避免传入太多的值给后端
         const maxRow = max(Object.keys(cellData).map(s => +s));
         const maxCol = max(Object.keys(cellData).map((row) => {
@@ -86,49 +108,16 @@ const UniverSheet = forwardRef(({ data }, ref) => {
     },
   }));
 
-  /**
-   * Initialize univer instance and workbook instance
-   * @param data {IWorkbookData} document see https://univer.work/api/core/interfaces/IWorkbookData.html
-   */
   const init = (data = {}) => {
     if (!containerRef.current) {
       throw Error('container not initialized');
     }
-    const univer = new Univer({
-      theme: defaultTheme,
-      locale: LocaleType.ZH_CN,
-      locales: {
-        [LocaleType.ZH_CN]: Tools.deepMerge(
-          SheetsZhCN,
-          DocsUIZhCN,
-          SheetsUIZhCN,
-          UIZhCN,
-          DesignZhCN,
-          SheetsFilterUIZhCN
-        ),
-      },
-    });
+    const univer = createUniverInstance()
     univerRef.current = univer;
 
-    // core plugins
-    univer.registerPlugin(UniverRenderEnginePlugin);
-    univer.registerPlugin(UniverFormulaEnginePlugin);
     univer.registerPlugin(UniverUIPlugin, {
       container: containerRef.current,
     });
-
-    // doc plugins
-    univer.registerPlugin(UniverDocsPlugin, {
-      hasScroll: false,
-    });
-    univer.registerPlugin(UniverDocsUIPlugin);
-
-    // sheet plugins
-    univer.registerPlugin(UniverSheetsPlugin);
-    univer.registerPlugin(UniverSheetsUIPlugin);
-    univer.registerPlugin(UniverSheetsFormulaPlugin);
-    univer.registerPlugin(UniverSheetsFilterPlugin);
-    univer.registerPlugin(UniverSheetsFilterUIPlugin);
     // create workbook instance
     workbookRef.current = univer.createUnit(UniverInstanceType.UNIVER_SHEET, data);
     const univerAPI = FUniver.newAPI(univer)
@@ -137,33 +126,31 @@ const UniverSheet = forwardRef(({ data }, ref) => {
     activeWorkbook.onSelectionChange((selection) => {
       currentSelection.current = selection;
     });
+    univerAPI.onBeforeCommandExecute((command) => {
+      const { id, type, params } = command;
+      console.log({ id, type, params });
+      if (['sheet.mutation.insert-sheet', 'sheet.mutation.remove-sheet', 'sheet.mutation.set-worksheet-name', ''].includes(id)) {
+        const sheets = activeWorkbook.getSheets();
+        const sheetsInfo = sheets.map(s => ({
+          value: s.getSheetId(),
+          label: s.getSheetName()
+        }))
+        dispatchPageState({
+          type: Action.UpdateSheets,
+          payload: sheetsInfo
+        })
+      }
+    })
   };
 
-  /**
-   * Destroy univer instance and workbook instance
-   */
   const destroyUniver = () => {
-    // univerRef.current?.dispose();
+
     univerRef.current = null;
     workbookRef.current = null;
+    currentSelection.current = null;
+    fUniverRef.current = null;
   };
 
-  /**
-   * Get workbook data
-   */
-  const getData = () => {
-    if (!workbookRef.current) {
-      throw new Error('Workbook is not initialized');
-    }
-    return workbookRef.current.save();
-  };
-
-  useEffect(() => {
-    init(data);
-    return () => {
-      destroyUniver();
-    };
-  }, [data]);
 
   return <div ref={containerRef} className="univer-container" />;
 });
