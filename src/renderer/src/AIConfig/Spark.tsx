@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Input, Button, Card, CardBody, CardHeader, Divider, } from "@nextui-org/react";
+import { Input, Button, Divider } from "@nextui-org/react";
 import { useToast } from 'tw-noti';
 import React from 'react';
 
@@ -40,7 +40,8 @@ export default (props: { onClose: Function }) => {
         }
         window.electron.ipcRenderer.invoke('setSparkConfig', sparkConfig).then(data => {
             setLoading(false)
-            data && enqueueToast({ content: '保存成功', type: 'success' })
+            enqueueToast({ content: '保存成功', type: 'success' })
+            props.onClose()
         })
     }
     return <div>
