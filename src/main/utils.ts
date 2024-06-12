@@ -28,14 +28,35 @@ export const uploadExcel = async () => {
             }
             excelData.push(sheetData)
             // 遍历工作表中的行
+            let firsRow = true;
+            let firsRowIndex = 0;
             worksheet.eachRow((row, rowNumber) => {
-                let rowdata = {}
-                sheetData.data[rowNumber] = rowdata;
-                console.log(`Row Number: ${rowNumber}`);
+                let rowdata = {};
+                let rowNumerFix = rowNumber;
+                if (firsRow) {
+                    firsRowIndex = rowNumber;
+                    firsRow = false
+                }
+                if (firsRowIndex > 0) {
+                    rowNumerFix -= firsRowIndex;
+                }
+                sheetData.data[rowNumerFix] = rowdata;
+                console.log(`Row Number: ${rowNumerFix}`);
+                let firsCol = true;
+                let firsColIndex = 0;
 
                 row.eachCell((cell, colNumber) => {
-                    rowdata[colNumber] = { v: cell.value };
-                    console.log(`Column Number: ${colNumber}, Value: ${cell.value}`);
+                    let colNumberFix = colNumber;
+                    if (firsCol) {
+                        firsColIndex = colNumber
+                        firsCol = false
+                    }
+                    if (firsColIndex > 0) {
+                        colNumberFix -= firsColIndex;
+                    }
+
+                    rowdata[colNumberFix] = { v: cell.value };
+                    console.log(`Column Number: ${colNumberFix}, Value: ${cell.value}`);
                 });
             });
         });

@@ -2,14 +2,13 @@ import UniverSheet from "./univer"
 import React, { useReducer, useRef, useState, useEffect } from 'react';
 import { DEFAULT_WORKBOOK_DATA } from './workbook-data';
 import { Button, Modal, useDisclosure, ModalBody, ModalContent, } from "@nextui-org/react";
-import { Divider } from "@nextui-org/react";
 import Logo from '../public/logo.png'
 import SetIcon from '../public/setting.svg'
-import reducer from './reducer'
+import reducer, { Action } from './reducer'
 import './App.css'
-import Spark from "./AIConfig/Spark";
 import AIPanel from "./FooterPanel";
 import Slider from "./Slider";
+import Tongyi from "./AIConfig/Tongyi";
 export const PageContext = React.createContext<{ univerRef?: any, pageState?: any, dispatchPageState: (params: { type: string, payload: any }) => any }>();
 
 function App(): JSX.Element {
@@ -22,6 +21,12 @@ function App(): JSX.Element {
 
   useEffect(() => {
     univerRef.current?.initData(DEFAULT_WORKBOOK_DATA)
+
+    window.api.receive('handlerDataEnd', (data) => {
+      univerRef.current?.initData(data)
+
+      dispatchPageState({ type: Action.Loading, payload: false }) // 在控制台打印从主进程接收到的消息
+    });
   }, [])
   const exportExcel = () => {
     const activeSheet = univerRef.current?.getSelectionData();
@@ -51,7 +56,7 @@ function App(): JSX.Element {
       <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
         <ModalContent>
           <ModalBody>
-            <Spark onClose={onClose}></Spark>
+            <Tongyi onClose={onClose}></Tongyi>
           </ModalBody> </ModalContent>
       </Modal>
 

@@ -1,10 +1,10 @@
-import React, { useState } from "react"
+import React, { useEffect, useState } from "react"
 import { Button, Divider, Textarea, DropdownTrigger, Dropdown, DropdownMenu, DropdownItem } from "@nextui-org/react";
 import { PageContext } from './App'
 import { Action } from './reducer'
 import { generateData } from './utils'
 import { useToast } from 'tw-noti';
-import { SparkRecorder } from './AIConfig/SparkConnet'
+import TongyiConnect from '../../main/TongyiConnect'
 import { Resizable } from "re-resizable";
 
 export default () => {
@@ -22,6 +22,16 @@ export default () => {
 
         });
     }
+    useEffect(() => {
+        window.api.receive('queryExcelQuestionReponese', (message) => {
+             console.log(message); // 在控制台打印从主进程接收到的消息
+             setanswerText(message)
+        });
+        window.api.receive('queryExcelQuestionEnd', () => {
+            dispatchPageState({ type: Action.Loading, payload: false }) // 在控制台打印从主进程接收到的消息
+        });
+
+    }, [])
     const exportCurrPage = () => {
         const pageData = univerRef.current?.getCurrentSheetData()
     }
@@ -30,27 +40,9 @@ export default () => {
     }
     const requestQuestion = () => {
         try {
-            window.electron.ipcRenderer.invoke('getSparkConfig').then(sparkConfig => {
-                if (!sparkConfig) {
-                    enqueueToast({ content: '没有读取到配置', type: 'error' })
-                }
-                dispatchPageState({ type: Action.Loading, payload: true })
-                let WebConnect = new SparkRecorder(sparkConfig);
-                WebConnect.onEnd = () => {
-                    WebConnect.setStatus('close')
-                    dispatchPageState({ type: Action.Loading, payload: false })
-                }
+            dispatchPageState({ type: Action.Loading, payload: true })
+            window.electron.ipcRenderer.invoke('queryExcelQuestion', questionText).then(() => {
 
-                WebConnect.onResult = (res) => {
-                    try {
-                        setanswerText(res)
-                    } catch {
-                    }
-                }
-                WebConnect.onOpen = () => {
-                    WebConnect.webSocketSend(questionText);
-                }
-                WebConnect.start()
             })
         } catch (error) {
             console.error('Error parsing the translated text:', error);

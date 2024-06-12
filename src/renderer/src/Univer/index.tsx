@@ -50,7 +50,7 @@ const UniverSheet = forwardRef(({ }, ref) => {
         label: s.getSheetName()
       }))
     },
-    getAllSheetsData() {
+    getDocData() {
       const univerAPI = fUniverRef.current;
       const activeWorkbook = univerAPI.getActiveWorkbook();
       const snapshot = activeWorkbook.getSnapshot();
@@ -103,7 +103,7 @@ const UniverSheet = forwardRef(({ }, ref) => {
           });
         })
         console.log({ selecrionData })
-
+        return selecrionData;
       }
     },
   }));

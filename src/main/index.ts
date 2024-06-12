@@ -3,12 +3,14 @@ import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import { exportExcel, uploadExcel } from './utils'
 import Store from 'electron-store';
+import TongyiConnect from './TongyiConnect';
+import TongyiDataConnect from './TongyiDataConnect';
 const store = new Store();
-
+let mainWindow = null;
 
 function createWindow(): void {
   // Create the browser window.
-  const mainWindow = new BrowserWindow({
+  mainWindow = new BrowserWindow({
     width: 1900,
     height: 1670,
     show: false,
@@ -56,12 +58,38 @@ app.whenReady().then(() => {
 
   // IPC test
   ipcMain.handle('uploadExcel', () => uploadExcel())
-  ipcMain.handle('exportExcel', (_,data) => exportExcel(data))
+  ipcMain.handle('exportExcel', (_, data) => exportExcel(data))
   ipcMain.handle('getSparkConfig', () => {
     return store.get('sparkConfig');
   })
-  ipcMain.handle('setSparkConfig', (_,data) => {
+  ipcMain.handle('setSparkConfig', (_, data) => {
     store.set('sparkConfig', data);
+    return true;
+  })
+  ipcMain.handle('getTongyiConfig', () => {
+    return store.get('tongyiConfig');
+  })
+  ipcMain.handle('setTongyiConfig', (_, data) => {
+    store.set('tongyiConfig', data);
+    return true;
+  })
+  ipcMain.handle('queryExcelQuestion', (_, data) => {
+
+    TongyiConnect(store.get('tongyiConfig'), data, (str) => {
+      console.log('queryExcelQuestionReponese:', str);
+      mainWindow.webContents.send('queryExcelQuestionReponese', str);
+    }, () => {
+      mainWindow.webContents.send('queryExcelQuestionEnd');
+
+    })
+    return true;
+  })
+  ipcMain.handle('handlerData', (_, data) => {
+
+    TongyiDataConnect(store.get('tongyiConfig'), data,(res) => {
+      mainWindow.webContents.send('handlerDataEnd',res);
+
+    })
     return true;
   })
 
