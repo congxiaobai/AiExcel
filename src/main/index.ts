@@ -58,7 +58,7 @@ app.whenReady().then(() => {
 
   // IPC test
   ipcMain.handle('uploadExcel', () => uploadExcel())
-  ipcMain.handle('exportExcel', (_, data) => exportExcel(data,app.getPath('documents')))
+  ipcMain.handle('exportExcel', (_, data) => exportExcel(data, app.getPath('documents')))
   ipcMain.handle('getSparkConfig', () => {
     return store.get('sparkConfig');
   })
@@ -84,14 +84,7 @@ app.whenReady().then(() => {
     })
     return true;
   })
-  ipcMain.handle('handlerData', (_, data) => {
-
-    TongyiDataConnect(store.get('tongyiConfig'), data,(res) => {
-      mainWindow.webContents.send('handlerDataEnd',res);
-
-    })
-    return true;
-  })
+  ipcMain.handle('handlerData', (_, data) => TongyiDataConnect(store.get('tongyiConfig'), data))
 
   createWindow()
 

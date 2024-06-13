@@ -25,14 +25,7 @@ function App(): JSX.Element {
   useEffect(() => {
     univerRef.current?.initData(DEFAULT_WORKBOOK_DATA)
 
-    window.api.receive('handlerDataEnd', (data) => {
-      univerRef.current?.addResSheet(data)
-
-      dispatchPageState({ type: Action.Loading, payload: false }) // 在控制台打印从主进程接收到的消息
-    });
-    return () => {
-      window.api.removeListener('handlerDataEnd');
-    }
+ 
   }, [])
 
   return (

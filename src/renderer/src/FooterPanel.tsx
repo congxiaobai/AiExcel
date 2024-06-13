@@ -23,9 +23,12 @@ export default () => {
         data && window.electron.ipcRenderer.invoke('handlerData', {
             promotText,
             data
-        }).then(() => {
+        }).then((res) => {
+            res && univerRef.current?.addResSheet(res)
 
+            dispatchPageState({ type: Action.Loading, payload: false }) // 在控制台打印从主进程接收到的消息
         })
+
     }
     return <Tabs aria-label="Options" isVertical={true} className="p-2" onSelectionChange={(key: string) => setActiveKey(key)}>
         <Tab key="selection" title="操作选择区数据" className="flex-1 ">

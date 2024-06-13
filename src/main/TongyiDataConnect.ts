@@ -3,7 +3,7 @@ import axios from 'axios';
 const url = 'https://dashscope.aliyuncs.com/api/v1/services/aigc/text-generation/generation';
 const jsonPattern = /```json\n([\s\S]*?)\n```/;
 
-export default (config, request, onClose) => {
+export default async (config, request) => {
     const { promotText, data } = request
     const headers = {
         'Content-Type': 'application/json',
@@ -42,23 +42,15 @@ export default (config, request, onClose) => {
             result_format: "message"
         }
     };
-    axios.post(url, body, { headers })
-        .then(response => {
-            let data = response.data.output?.choices || [];
-            let res = data.map(s => s.message.content).join('')
-            const match = jsonPattern.exec(res);
-            if (match) {
-                // 提取并解析JSON字符串
-                const jsonString = match[1];
-                const jsonData = JSON.parse(jsonString.replace(/'/g, '"'));
-                jsonData && onClose(jsonData);
-                console.log(jsonData);
-            } else {
-                console.log('No JSON data found in the text.');
-            }
-        })
-        .catch(error => {
-            console.error('请求出错：', error);
-
-        });
+    const response = await axios.post(url, body, { headers });
+    let choices = response.data.output?.choices || [];
+    let res = choices.map(s => s.message.content).join('')
+    const match = jsonPattern.exec(res);
+    if (match) {
+        // 提取并解析JSON字符串
+        const jsonString = match[1];
+        const jsonData = JSON.parse(jsonString.replace(/'/g, '"'));
+        return jsonData;
+    }
+    return false
 }
