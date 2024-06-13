@@ -4,7 +4,8 @@ declare global {
   interface Window {
     electron: ElectronAPI
     api: {
-      receive:Function
+      receive:Function,
+      removeListener:Function
     }
   }
 }

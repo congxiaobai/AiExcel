@@ -48,6 +48,7 @@
     "knex": "^3.1.0",
     "lodash": "^4.17.21",
     "re-resizable": "^6.9.17",
+    "react-toastify": "^10.0.5",
     "rxjs": "^7.8.1",
     "tw-noti": "^1.1.0"
   },

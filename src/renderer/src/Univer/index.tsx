@@ -7,6 +7,7 @@ import '@univerjs/sheets-filter-ui/lib/index.css';
 import './index.css'
 import { UniverInstanceType, IRange } from '@univerjs/core';
 import max from 'lodash/max'
+import uniqueId from 'lodash/uniqueId'
 
 import { UniverUIPlugin } from '@univerjs/ui';
 import { FUniver } from '@univerjs/facade';
@@ -15,6 +16,9 @@ import { createUniverInstance } from './utils'
 import { PageContext } from '../App'
 import React from "react";
 import { Action } from "@renderer/reducer";
+
+
+
 // eslint-disable-next-line react/display-name
 const UniverSheet = forwardRef(({ }, ref) => {
   const univerRef = useRef(null);
@@ -24,7 +28,6 @@ const UniverSheet = forwardRef(({ }, ref) => {
   /** @type {React.RefObject<FUniver>} */
   const fUniverRef = useRef<FUniver>(null);
   const { pageState, dispatchPageState } = React.useContext(PageContext)
-
   useImperativeHandle(ref, () => ({
     getFUniverRef() {
       return fUniverRef.current;
@@ -40,6 +43,25 @@ const UniverSheet = forwardRef(({ }, ref) => {
         }
       })
       dispatchPageState({ type: Action.UpdateSheets, payload: sheets })
+    },
+    addResSheet(cellData) {
+      const univerAPI = fUniverRef.current;
+      const activeWorkbook = univerAPI.getActiveWorkbook();
+      const maxRow = max(Object.keys(cellData).map(s => +s));
+      const maxCol = max(Object.keys(cellData).map((row) => {
+        return max(Object.keys(cellData[row]).map(s => +s))
+      }))
+      const newSheet = activeWorkbook.create(uniqueId('结果页-'), maxRow<99?99:maxRow, maxCol<99?99:maxCol);
+      const sheetId = newSheet.getSheetId();
+      const workbookId = activeWorkbook.getId();
+      univerAPI.executeCommand('sheet.command.active-sheet', { unitId: workbookId, subUnitId: sheetId });
+      fillData(cellData,sheetId)
+    },
+    updateCurrentData(cellData) {
+      const univerAPI = fUniverRef.current;
+      const activeWorkbook = univerAPI.getActiveWorkbook();
+      const activeSheet = activeWorkbook.getActiveSheet();
+      fillData(cellData,activeSheet.getSheetId())
     },
     getAllSheet() {
       const univerAPI = fUniverRef.current;
@@ -65,7 +87,7 @@ const UniverSheet = forwardRef(({ }, ref) => {
       const sheetData = Object.values(snapshot.sheets).find((sheet) => {
         return sheet.id === sheetId
       })
-      return sheetData;
+      return { [sheetData.name]: sheetData };
     },
     getSelectionData() {
       const univerAPI = fUniverRef.current;
@@ -141,6 +163,8 @@ const UniverSheet = forwardRef(({ }, ref) => {
         })
       }
     })
+    //univerAPI.executeCommand(SetWorksheetColWidthMutation.id, 
+
   };
 
   const destroyUniver = () => {
@@ -149,6 +173,17 @@ const UniverSheet = forwardRef(({ }, ref) => {
     workbookRef.current = null;
     currentSelection.current = null;
     fUniverRef.current = null;
+  };
+
+  const fillData = (data,id) => {
+    const univerAPI = fUniverRef.current;
+    const sheet = univerAPI.getActiveWorkbook().getSheetBySheetId(id);
+    Object.keys(data).forEach(rowIndex => {
+      Object.keys(data[rowIndex]).forEach(colIndex => {
+        const range = sheet.getRange(+rowIndex, +colIndex);
+        range.setValue(data[rowIndex][colIndex].v);
+      })
+    })
   };
 
 

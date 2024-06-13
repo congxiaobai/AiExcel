@@ -1,6 +1,7 @@
 
 const { dialog } = require('electron')
 const ExcelJS = require('exceljs');
+import max from 'lodash/max'
 
 export const uploadExcel = async () => {
     let result = await dialog.showOpenDialog({
@@ -64,33 +65,41 @@ export const uploadExcel = async () => {
     }
     return false
 }
-export const exportExcel = async (data) => {
+export const exportExcel = async (data, defaultPath) => {
     try {
         const result = await dialog.showSaveDialog({
-            title: '保存文件',
-            defaultPath: 'default.xlsx',
-            filters: [{ name: 'default', extensions: ['xlsx'] }],
+            title: '保存为 Excel 文件',
+            defaultPath, // 默认路径为桌面
+            filters: [ // 定义文件类型过滤器
+                {
+                    name: 'Excel Files',
+                    extensions: ['xlsx']
+                },
+                // 可以添加更多过滤器或包含一个接受所有文件的过滤器
+                { name: 'All Files', extensions: ['*'] }
+            ]
         });
 
         if (!result.canceled) {
             console.log('保存位置:', result.filePath);
             // 初始化一个新的工作簿
             const workbook = new ExcelJS.Workbook();
+            Object.keys(data).forEach((key) => {
+                const sheetData = data[key];
+                const worksheet = workbook.addWorksheet(key);
+                const cellData = sheetData.cellData;
+                let maxRow = max(Object.keys(cellData).map(s => +s));
+                while (max > -1) {
+                    worksheet.addRow([]);
+                    maxRow--;
+                }
+                Object.keys(cellData).forEach((rowIndex) => {
+                    Object.keys(cellData[rowIndex]).forEach(colIndex => {
+                        worksheet.getCell(+rowIndex+1, +colIndex+1).value = cellData[rowIndex][colIndex].v;
+                    })
+                })
+            })
 
-            // 添加一个新的工作表
-            const worksheet = workbook.addWorksheet('Sheet 1');
-
-            // 添加表头
-            worksheet.columns = [
-                { header: '姓名', key: 'name', width: 10 },
-                { header: '年龄', key: 'age', width: 10 },
-                { header: '城市', key: 'city', width: 15 },
-            ];
-
-            // 添加数据行
-            worksheet.addRow({ name: '张三', age: 25, city: '北京' });
-            worksheet.addRow({ name: '李四', age: 30, city: '上海' });
-            worksheet.addRow({ name: '王五', age: 28, city: '广州' });
 
             // 写入文件
             await workbook.xlsx.writeFile(result.filePath);

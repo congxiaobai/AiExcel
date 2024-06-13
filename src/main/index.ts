@@ -58,7 +58,7 @@ app.whenReady().then(() => {
 
   // IPC test
   ipcMain.handle('uploadExcel', () => uploadExcel())
-  ipcMain.handle('exportExcel', (_, data) => exportExcel(data))
+  ipcMain.handle('exportExcel', (_, data) => exportExcel(data,app.getPath('documents')))
   ipcMain.handle('getSparkConfig', () => {
     return store.get('sparkConfig');
   })

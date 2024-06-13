@@ -9,11 +9,7 @@ import { ToastProvider } from 'tw-noti';
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <NextUIProvider>
-      <ToastProvider
-      >
-        <App />
-      </ToastProvider>
-
+      <App />
     </NextUIProvider>
   </React.StrictMode>,
 )

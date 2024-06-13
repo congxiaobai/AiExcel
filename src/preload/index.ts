@@ -6,6 +6,9 @@ const api = {
   receive: (channel, func) => {
     ipcRenderer.on(channel, (event, ...args) => func(...args));
   },
+  removeListener:(channel,func)=>{
+    ipcRenderer.removeListener(channel, (event, ...args) => func(...args));
+  }
 }
 
 // Use `contextBridge` APIs to expose Electron APIs to

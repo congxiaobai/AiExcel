@@ -5,6 +5,9 @@ import { Button, Modal, useDisclosure, ModalBody, ModalContent, } from "@nextui-
 import Logo from '../public/logo.png'
 import SetIcon from '../public/setting.svg'
 import reducer, { Action } from './reducer'
+import 'react-toastify/dist/ReactToastify.css';
+import { ToastContainer } from 'react-toastify';
+
 import './App.css'
 import AIPanel from "./FooterPanel";
 import Slider from "./Slider";
@@ -23,21 +26,23 @@ function App(): JSX.Element {
     univerRef.current?.initData(DEFAULT_WORKBOOK_DATA)
 
     window.api.receive('handlerDataEnd', (data) => {
-      univerRef.current?.initData(data)
+      univerRef.current?.addResSheet(data)
 
       dispatchPageState({ type: Action.Loading, payload: false }) // 在控制台打印从主进程接收到的消息
     });
+    return () => {
+      window.api.removeListener('handlerDataEnd');
+    }
   }, [])
-  const exportExcel = () => {
-    const activeSheet = univerRef.current?.getSelectionData();
-    console.log({ activeSheet })
-  }
+
   return (
     <PageContext.Provider value={{
       univerRef,
       pageState,
       dispatchPageState,
     }}>
+
+
       <div className="flex justify-between items-center  shadow-md rounded-md	h-14 pl-2 pr-2" >
         <img src={Logo} className="w-14 h-14"></img>
         <Button isIconOnly className='bg-white w-10 h-10' size='sm' onClick={onOpen}>
@@ -59,7 +64,15 @@ function App(): JSX.Element {
             <Tongyi onClose={onClose}></Tongyi>
           </ModalBody> </ModalContent>
       </Modal>
+      <ToastContainer position="top-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
 
+        theme="light"
+      />
     </PageContext.Provider>
   )
 }

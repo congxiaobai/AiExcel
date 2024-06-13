@@ -3,15 +3,13 @@ import { Button, Divider, Textarea, DropdownTrigger, Dropdown, DropdownMenu, Dro
 import { PageContext } from './App'
 import { Action } from './reducer'
 import { generateData } from './utils'
-import { useToast } from 'tw-noti';
-import TongyiConnect from '../../main/TongyiConnect'
+import { toast } from 'react-toastify';
 import { Resizable } from "re-resizable";
 
 export default () => {
     const [questionText, setQuestionText] = React.useState('');
     const [answerText, setanswerText] = useState('');
     const { univerRef, dispatchPageState, pageState } = React.useContext(PageContext)
-    const { enqueueToast } = useToast();
 
     const uploadExcel = () => {
         dispatchPageState({ type: Action.Loading, payload: true })
@@ -24,8 +22,8 @@ export default () => {
     }
     useEffect(() => {
         window.api.receive('queryExcelQuestionReponese', (message) => {
-             console.log(message); // 在控制台打印从主进程接收到的消息
-             setanswerText(message)
+            console.log(message); // 在控制台打印从主进程接收到的消息
+            setanswerText(message)
         });
         window.api.receive('queryExcelQuestionEnd', () => {
             dispatchPageState({ type: Action.Loading, payload: false }) // 在控制台打印从主进程接收到的消息
@@ -33,10 +31,18 @@ export default () => {
 
     }, [])
     const exportCurrPage = () => {
-        const pageData = univerRef.current?.getCurrentSheetData()
+        const pageData = univerRef.current?.getActivePageData();
+        window.electron.ipcRenderer.invoke('exportExcel',pageData).then(res => {
+            dispatchPageState({ type: Action.Loading, payload: false })
+
+        });
     }
     const exportDoc = () => {
-        const docData = univerRef.current?.getAllSheetsData()
+        const docData = univerRef.current?.getDocData()
+        window.electron.ipcRenderer.invoke('exportExcel',docData).then(res => {
+            dispatchPageState({ type: Action.Loading, payload: false })
+
+        });
     }
     const requestQuestion = () => {
         try {
@@ -46,7 +52,7 @@ export default () => {
             })
         } catch (error) {
             console.error('Error parsing the translated text:', error);
-
+            toast.error(error)
         }
     }
 

@@ -59,7 +59,6 @@ export const DEFAULT_WORKBOOK_DATA = {
         height: 20,
         hidden: BooleanNumber.FALSE,
       },
-      selections: ['A2'],
       rightToLeft: BooleanNumber.FALSE,
       pluginMeta: {},
     },
