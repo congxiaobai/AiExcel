@@ -7,3 +7,7 @@ declare module '.' {
 
   export default UniverSheet;
 }
+declare module '@univerjs/ui/locale/zh-CN';
+declare module '@univerjs/sheets/locale/zh-CN';
+declare module '@univerjs/sheets-ui/locale/zh-CN';
+declare module '@univerjs/sheets-filter-ui/locale/zh-CN';

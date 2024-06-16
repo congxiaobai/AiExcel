@@ -38,7 +38,7 @@ export default (props: { onClose: Function }) => {
             spark_apiSecret: value.spark_apiSecret,
             spark_apiKey: value.spark_apiKey
         }
-        window.electron.ipcRenderer.invoke('setSparkConfig', sparkConfig).then(data => {
+        window.electron.ipcRenderer.invoke('setSparkConfig', sparkConfig).then(() => {
             setLoading(false)
             enqueueToast({ content: '保存成功', type: 'success' })
             props.onClose()
@@ -81,7 +81,7 @@ export default (props: { onClose: Function }) => {
 
             />
             <div className='flex justify-end gap-2' >
-                <Button onClick={props.onClose}>关闭</Button>
+                <Button onClick={()=>props.onClose()}>关闭</Button>
                 <Button isLoading={loading} color="success" isDisabled={!canSubmit} onClick={submit}>保存</Button>
             </div>
 

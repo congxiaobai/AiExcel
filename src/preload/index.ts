@@ -4,9 +4,11 @@ import { electronAPI } from '@electron-toolkit/preload'
 // Custom APIs for renderer
 const api = {
   receive: (channel, func) => {
+     // @ts-ignore 
     ipcRenderer.on(channel, (event, ...args) => func(...args));
   },
   removeListener:(channel,func)=>{
+     // @ts-ignore 
     ipcRenderer.removeListener(channel, (event, ...args) => func(...args));
   }
 }

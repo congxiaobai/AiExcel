@@ -35,7 +35,7 @@ export default (props: { onClose: Function }) => {
         const sparkConfig = {
             tongyi_apiKey: value.tongyi_apiKey,
         }
-        window.electron.ipcRenderer.invoke('setTongyiConfig', sparkConfig).then(data => {
+        window.electron.ipcRenderer.invoke('setTongyiConfig', sparkConfig).then(() => {
             setLoading(false)
             enqueueToast({ content: '保存成功', type: 'success' })
             props.onClose()
@@ -62,7 +62,7 @@ export default (props: { onClose: Function }) => {
                 onChange={(e) => setValue({ tongyi_apiKey: e.target.value })}
             />
             <div className='flex justify-end gap-2' >
-                <Button onClick={props.onClose}>关闭</Button>
+                <Button onClick={()=>props.onClose()}>关闭</Button>
                 <Button isLoading={loading} color="success" isDisabled={!canSubmit} onClick={submit}>保存</Button>
             </div>
 

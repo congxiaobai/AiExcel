@@ -3,9 +3,10 @@ let httpUrl = new URL("https://spark-api.xf-yun.com/v3.5/chat");
 let modelDomain = "generalv3.5"; // V3.5
 
 export function getWebsocketUrl(apiKey, apiSecret) {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
         var url = 'wss://' + httpUrl.host + httpUrl.pathname
         var host = location.host
+        //@ts-ignore
         var date = new Date().toGMTString()
         var algorithm = 'hmac-sha256'
         var headers = 'host date request-line'
@@ -23,12 +24,12 @@ export class SparkRecorder {
     private spark_appId;
     private spark_apiSecret
     private spark_apiKey
-    private status = null;
     private ttsWS = null;
     public onOpen: Function;
     public onEnd: Function;
     public onResult: Function;
     private total_res = '';
+    private status = '';
     constructor({
         spark_appId,
         spark_apiSecret,
@@ -43,7 +44,10 @@ export class SparkRecorder {
     public setStatus(status) {
         this.status = status
     }
-
+    // 修改状态
+    public getStatus() {
+        return this.status
+    }
     // 连接websocket
     connectWebSocket() {
         this.setStatus('ttsing')
@@ -57,11 +61,11 @@ export class SparkRecorder {
             ttsWS.onmessage = e => {
                 this.result(e.data)
             }
-            ttsWS.onerror = e => {
+            ttsWS.onerror = () => {
 
                 this.setStatus('error')
             }
-            ttsWS.onclose = e => {
+            ttsWS.onclose = () => {
                 this.ttsWS = null;
                 this.setStatus('notReady')
             }

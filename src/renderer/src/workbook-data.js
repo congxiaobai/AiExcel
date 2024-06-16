@@ -24,7 +24,7 @@ export const DEFAULT_WORKBOOK_DATA = {
   id: 'workbook-01',
   locale: LocaleType.ZH_CN,
   name: 'universheet',
- 
+
   appVersion: '3.0.0-alpha',
   sheets: {
     'sheet-01': {
@@ -40,7 +40,7 @@ export const DEFAULT_WORKBOOK_DATA = {
       name: 'sheet1',
 
       hidden: BooleanNumber.FALSE,
-      rowCount: 1000,
+      rowCount: 100,
       columnCount: 20,
       zoomRatio: 1,
       scrollTop: 200,
@@ -62,7 +62,19 @@ export const DEFAULT_WORKBOOK_DATA = {
       rightToLeft: BooleanNumber.FALSE,
       pluginMeta: {},
     },
-  },
+    'sheet-02': {
+      type: SheetTypes.GRID,
+      id: 'sheet-02',
+      cellData: {
+        0: {
+          0: {
+            v: 'Hello World--2',
+          },
+        },
+      },
+      name: 'sheet-02',
+    }
+  }
 };
 
 

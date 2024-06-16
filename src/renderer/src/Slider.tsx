@@ -32,14 +32,14 @@ export default () => {
     }, [])
     const exportCurrPage = () => {
         const pageData = univerRef.current?.getActivePageData();
-        window.electron.ipcRenderer.invoke('exportExcel',pageData).then(res => {
+        window.electron.ipcRenderer.invoke('exportExcel',pageData).then(() => {
             dispatchPageState({ type: Action.Loading, payload: false })
 
         });
     }
     const exportDoc = () => {
         const docData = univerRef.current?.getDocData()
-        window.electron.ipcRenderer.invoke('exportExcel',docData).then(res => {
+        window.electron.ipcRenderer.invoke('exportExcel',docData).then(() => {
             dispatchPageState({ type: Action.Loading, payload: false })
 
         });

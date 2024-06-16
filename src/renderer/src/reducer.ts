@@ -3,7 +3,7 @@ export const Action = {
     UpdateSheets: 'UpdateSheets'
 }
 
-export default (state, action: { tyep: string, payload: any }) => {
+export default (state, action: { type: string, payload: any }) => {
     switch (action.type) {
         case 'Loading':
             return { ...state, loading:action.payload };

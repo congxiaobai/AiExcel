@@ -25,7 +25,6 @@ export default () => {
             data
         }).then((res) => {
             res && univerRef.current?.addResSheet(res)
-
             dispatchPageState({ type: Action.Loading, payload: false }) // 在控制台打印从主进程接收到的消息
         })
 

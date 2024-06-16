@@ -11,11 +11,12 @@ import uniqueId from 'lodash/uniqueId'
 
 import { UniverUIPlugin } from '@univerjs/ui';
 import { FUniver } from '@univerjs/facade';
-import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react';
+import { forwardRef, useImperativeHandle, useRef } from 'react';
 import { createUniverInstance } from './utils'
 import { PageContext } from '../App'
 import React from "react";
 import { Action } from "@renderer/reducer";
+import { SetWorksheetColWidthMutation } from "@univerjs/sheets";
 
 
 
@@ -27,7 +28,7 @@ const UniverSheet = forwardRef(({ }, ref) => {
   const currentSelection = useRef<IRange[]>(null);
   /** @type {React.RefObject<FUniver>} */
   const fUniverRef = useRef<FUniver>(null);
-  const { pageState, dispatchPageState } = React.useContext(PageContext)
+  const { dispatchPageState } = React.useContext(PageContext)
   useImperativeHandle(ref, () => ({
     getFUniverRef() {
       return fUniverRef.current;
@@ -44,24 +45,27 @@ const UniverSheet = forwardRef(({ }, ref) => {
       })
       dispatchPageState({ type: Action.UpdateSheets, payload: sheets })
     },
-    addResSheet(cellData) {
+    addResSheet(workdata) {
       const univerAPI = fUniverRef.current;
       const activeWorkbook = univerAPI.getActiveWorkbook();
-      const maxRow = max(Object.keys(cellData).map(s => +s));
-      const maxCol = max(Object.keys(cellData).map((row) => {
-        return max(Object.keys(cellData[row]).map(s => +s))
-      }))
-      const newSheet = activeWorkbook.create(uniqueId('结果页-'), maxRow<99?99:maxRow, maxCol<99?99:maxCol);
-      const sheetId = newSheet.getSheetId();
-      const workbookId = activeWorkbook.getId();
-      univerAPI.executeCommand('sheet.command.active-sheet', { unitId: workbookId, subUnitId: sheetId });
-      fillData(cellData,sheetId)
+      Object.keys(workdata).forEach(s => {
+        const cellData = workdata[s].cellData;
+        const maxRow = max(Object.keys(cellData).map(s => +s));
+        const maxCol = max(Object.keys(cellData).map((row) => {
+          return max(Object.keys(cellData[row]).map(s => +s))
+        }))
+        const newSheet = activeWorkbook.create(uniqueId('结果页-'), maxRow < 99 ? 99 : maxRow, maxCol < 99 ? 99 : maxCol);
+        const sheetId = newSheet.getSheetId();
+        const workbookId = activeWorkbook.getId();
+        univerAPI.executeCommand('sheet.command.active-sheet', { unitId: workbookId, subUnitId: sheetId });
+        fillData(cellData, sheetId)
+      })
     },
     updateCurrentData(cellData) {
       const univerAPI = fUniverRef.current;
       const activeWorkbook = univerAPI.getActiveWorkbook();
       const activeSheet = activeWorkbook.getActiveSheet();
-      fillData(cellData,activeSheet.getSheetId())
+      fillData(cellData, activeSheet.getSheetId())
     },
     getAllSheet() {
       const univerAPI = fUniverRef.current;
@@ -95,6 +99,7 @@ const UniverSheet = forwardRef(({ }, ref) => {
       const activeSheet = activeWorkbook.getActiveSheet();
       const snapshot = activeWorkbook.getSnapshot();
       const sheetId = activeSheet.getSheetId();
+      const sheetName = activeSheet.getSheetName();
       const sheetData = Object.values(snapshot.sheets).find((sheet) => {
         return sheet.id === sheetId
       })
@@ -125,7 +130,11 @@ const UniverSheet = forwardRef(({ }, ref) => {
           });
         })
         console.log({ selecrionData })
-        return selecrionData;
+        return {
+          [sheetName]: {
+            cellData: selecrionData
+          }
+        }
       }
     },
   }));
@@ -163,8 +172,7 @@ const UniverSheet = forwardRef(({ }, ref) => {
         })
       }
     })
-    //univerAPI.executeCommand(SetWorksheetColWidthMutation.id, 
-
+  
   };
 
   const destroyUniver = () => {
@@ -175,7 +183,7 @@ const UniverSheet = forwardRef(({ }, ref) => {
     fUniverRef.current = null;
   };
 
-  const fillData = (data,id) => {
+  const fillData = (data, id) => {
     const univerAPI = fUniverRef.current;
     const sheet = univerAPI.getActiveWorkbook().getSheetBySheetId(id);
     Object.keys(data).forEach(rowIndex => {
